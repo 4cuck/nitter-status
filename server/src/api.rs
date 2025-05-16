@@ -78,7 +78,7 @@ pub async fn graph_csv_stats(
     State(ref config): State<Arc<crate::Config>>,
 ) -> Result<axum::response::Response> {
     let start = std::time::Instant::now();
-    let healthy_data = instance_stats::StatsCSVEntry::fetch(db).await?;
+    let healthy_data = instance_stats::StatsCSVEntry::fetch(db, None).await?;
     let queried = std::time::Instant::now();
     let mut data = String::with_capacity(8 * healthy_data.len());
 

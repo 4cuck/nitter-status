@@ -75,10 +75,10 @@ async function loadStatsGraph() {
         fillAlpha: 0.4,
         colors: ['#008000', '#ffa500', '#6495ED'],
         series: {
-          'Tokens AVG': {
+          'Sessions AVG': {
             axis: 'y'
           },
-          'Limited Tokens AVG': {
+          'Limited Sessions AVG': {
             axis: 'y'
           },
           'Requests AVG': {
@@ -97,7 +97,7 @@ async function loadStatsGraph() {
             logscale: "y log scale",
           },
         },
-        ylabel: 'Tokens',
+        ylabel: 'Sessions',
         y2label: 'Requests',
       }
     );

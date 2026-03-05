@@ -87,7 +87,7 @@ pub async fn stats_csv_api(
     let queried = std::time::Instant::now();
     let mut data = String::with_capacity(8 * healthy_data.len());
 
-    data.push_str("Date,Tokens AVG,Limited Tokens AVG,Requests AVG\n");
+    data.push_str("Date,Sessions AVG,Limited Sessions AVG,Requests AVG\n");
 
     for entry in healthy_data {
         let time = Utc
@@ -129,7 +129,7 @@ pub async fn overview_csv_api(
     let queried = std::time::Instant::now();
     let mut data = String::with_capacity(8 * healthy_data.len());
 
-    data.push_str("Date,Tokens AVG,Limited Tokens AVG,Requests AVG\n");
+    data.push_str("Date,Sessions AVG,Limited Sessions AVG,Requests AVG\n");
 
     for entry in healthy_data {
         let time = Utc

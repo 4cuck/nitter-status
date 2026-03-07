@@ -152,7 +152,7 @@ impl Scanner {
                     .await
                     .unwrap()?
                 }
-                None => CommitInfo::UnknownCommit,
+                None => CommitInfo::Missing,
             };
 
             // TODO: rename all of this from ping to response_time or similar

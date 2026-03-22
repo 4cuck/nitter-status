@@ -32,7 +32,7 @@ async function loadHealthGraph(host_id) {
         drawPoints: true,
         strokeWidth: 0.0,
         colors: ['#008000', '#ffa500'],
-        ylabel: 'Nitter Instances',
+        ylabel: 'Time ms',
       }
     );
     // fixme: find valid annotation dates, regardless of the host
@@ -101,7 +101,7 @@ async function loadStatsGraph(host_id) {
             logscale: "y log scale",
           },
         },
-        ylabel: 'Sessions',
+        ylabel: 'Amount',
         y2label: 'Requests',
       }
     );

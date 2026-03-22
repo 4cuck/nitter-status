@@ -42,7 +42,6 @@ async function fetchDataAndCreateChart(startDate,endDate) {
         drawPoints: true,
         strokeWidth: 0.0,
         colors: ['#008000', '#ffa500'],
-        ylabel: 'Nitter Instances',
       }
     );
     g.ready(function () {

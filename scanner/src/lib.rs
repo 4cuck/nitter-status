@@ -12,7 +12,8 @@ use miette::{Context, IntoDiagnostic};
 use profile_parser::ProfileParser;
 use regex::{Regex, RegexBuilder};
 use reqwest::{
-    Client, ClientBuilder, header::{HeaderMap, HeaderValue}, retry
+    header::{HeaderMap, HeaderValue},
+    Client, ClientBuilder,
 };
 use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, FromQueryResult, Statement};
 use thiserror::Error;
@@ -129,8 +130,9 @@ pub async fn run_scanner(
     config: ScannerConfig,
     app_state: AppState,
     disable_health_checks: bool,
+    disable_github_fetch: bool,
 ) -> miette::Result<()> {
-    let scanner = Scanner::new(db, config, app_state)
+    let scanner = Scanner::new(db, config, app_state, disable_github_fetch)
         .await
         .wrap_err("Initializing scanner!")?;
     scanner.schedule_cleanup().unwrap();
@@ -192,11 +194,13 @@ impl Scanner {
         db: DatabaseConnection,
         config: ScannerConfig,
         app_state: AppState,
+        disable_github_fetch: bool,
     ) -> miette::Result<Self> {
         let mut builder_regex_rss = RegexBuilder::new(&config.rss_content);
         builder_regex_rss.case_insensitive(true);
 
-        let version_checker = Mutex::new(VersionCheck::new(config.clone()).into_diagnostic()?);
+        let version_checker =
+            Mutex::new(VersionCheck::new(config.clone(), disable_github_fetch).into_diagnostic()?);
 
         let http_client = Self::client_builder(&config);
         let client_ipv4 = Scanner::client_builder(&config)

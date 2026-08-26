@@ -84,12 +84,14 @@ async fn _main() -> miette::Result<()> {
     let cache = entities::state::new();
 
     let disable_health_checks = require_env_str("DISABLE_HEALTH_CHECKS")? == "true";
+    let disable_github_fetch = require_env_str("DISABLE_GITHUB_FETCH")? == "true";
 
     scanner::run_scanner(
         pool.clone(),
         scanner_config.clone(),
         cache.clone(),
         disable_health_checks,
+        disable_github_fetch,
     )
     .await
     .wrap_err("Crash starting background scanner")?;

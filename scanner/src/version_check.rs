@@ -4,6 +4,7 @@ use std::{collections::HashMap, path::Path};
 
 use entities::state::{scanner::ScannerConfig, CommitInfo};
 use git2::Repository;
+use tracing::warn;
 
 use crate::Result;
 
@@ -11,7 +12,6 @@ pub struct VersionCheck {
     config: ScannerConfig,
     commit_cache: HashMap<String, CommitCacheValue>,
     current_epoch: u8,
-    // TODO: this is ugly and unnecessary
     repository: Repository,
 }
 
@@ -22,10 +22,10 @@ struct CommitCacheValue {
 }
 
 impl VersionCheck {
-    pub(crate) fn new(config: ScannerConfig) -> Result<Self> {
-        let temp_dir = Path::new(&config.git_scratch_folder).join(format!("nitter_version_clone"));
-        tracing::debug!(git_check_dir=?temp_dir);
-        let repository = Repository::init(temp_dir)?;
+    pub(crate) fn new(config: ScannerConfig, disable_health_checks: bool) -> Result<Self> {
+        let clone_dir = Path::new(&config.git_scratch_folder).join(format!("nitter_version_clone"));
+        tracing::debug!(git_check_dir=?clone_dir);
+        let repository = Repository::init(clone_dir)?;
         let mut checker = VersionCheck {
             config,
             commit_cache: Default::default(),
@@ -33,7 +33,11 @@ impl VersionCheck {
             repository,
         };
 
-        checker.update_remote()?;
+        if !disable_health_checks {
+            checker.update_remote()?;
+        } else {
+            warn!("Version fetching disabled, attempting to use existing dir.");
+        }
         Ok(checker)
     }
     /// Increases the epoch, invalidating unused cache entries and removes them.
@@ -148,7 +152,7 @@ mod test {
 
     #[test]
     fn test_git_commit_exists() {
-        let mut checker = VersionCheck::new(Config::test_defaults()).unwrap();
+        let mut checker = VersionCheck::new(Config::test_defaults(), false).unwrap();
         assert_eq!(
             CommitInfo::Outdated,
             checker

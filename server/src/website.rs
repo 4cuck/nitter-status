@@ -78,3 +78,16 @@ pub async fn about(
     );
     Ok(res)
 }
+
+/// cnd website
+pub async fn cnd_rip(
+    State(ref template): State<Arc<tera::Tera>>,
+) -> Result<axum::response::Response> {
+    let context = tera::Context::new();
+    let mut res = Html(template.render("rip_cnd.html.j2", &context)?).into_response();
+    res.headers_mut().insert(
+        "cache-control",
+        HeaderValue::from_static("public, max-age=900"),
+    );
+    Ok(res)
+}

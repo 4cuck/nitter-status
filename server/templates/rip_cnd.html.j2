@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nitter Instance Health</title>
+  <meta name="robots" content="index, nofollow" />
+  <meta name="keywords" content="nitter, status, uptime" />
+  <meta name="description" content="Nitter instance uptime and status tracker." />
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --panel: #161616;
+      --fg: #f8f8f2;
+      --faded: #f8f8f2cf;
+      --grey: #888889;
+      --border: #3e3e35;
+      --accent: #ff6c60;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: var(--bg);
+      color: var(--fg);
+      font-family:
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    main {
+      width: 100%;
+      max-width: 34rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2.25rem 2rem;
+    }
+
+    .logo {
+      display: block;
+      width: 46px;
+      height: 46px;
+      margin: 0 0 1.25rem;
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0 0 1.1rem;
+    }
+
+    p:last-of-type,
+    p:has(+ hr) {
+      margin-bottom: 0;
+    }
+
+    hr {
+      margin: 1.75rem 0 1.25rem;
+      border: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    footer {
+      color: var(--grey);
+      font-size: 0.9rem;
+    }
+
+    h2 {
+      margin: 0 0 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+
+    a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.15rem;
+      margin: 0 0 1.25rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      align-items: baseline;
+      gap: 0.45rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    dt {
+      color: var(--grey);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    dd {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      color: var(--faded);
+      word-break: break-all;
+      line-height: 1.5;
+      -webkit-user-select: all;
+      user-select: all;
+    }
+
+    details {
+      margin: 0;
+    }
+
+    summary {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      width: max-content;
+      margin-left: -0.95rem;
+      cursor: pointer;
+      list-style: none;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--grey);
+      transition: color 0.15s ease;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary:hover,
+    details[open] summary {
+      color: var(--fg);
+    }
+
+    summary:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 5px;
+      border-radius: 2px;
+    }
+
+    summary::before {
+      content: "";
+      flex: none;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: translateY(-0.06em) rotate(-45deg);
+      transition: transform 0.2s ease;
+    }
+
+    details[open] summary::before {
+      transform: translateY(-0.16em) rotate(45deg);
+    }
+
+    .donations {
+      margin-top: 1.35rem;
+      animation: reveal 0.2s ease;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(-0.2rem);
+      }
+    }
+
+    .contact {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 1.75rem 1.35rem;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+      }
+
+      dl {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
+      }
+
+      dt {
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Cease and desist</h1>
+
+    <p>
+      On 24 August 2026 cease and desist letters have been sent by
+      X&nbsp;Corp. demanding a permanent takedown of Nitter instances and the
+      project's repository.
+    </p>
+
+    <p>
+      Development has stopped for the time being.
+      For more info see the official nitter.net statement.
+    </p>
+
+    <p>
+      Thank you to everyone who used, hosted, packaged, donated and
+      contributed to Nitter over the past seven years.
+    </p>
+
+    <hr />
+
+    <footer>&mdash; 28 August 2026</footer>
+  </main>
+</body>
+
+</html>

@@ -171,7 +171,7 @@ pub async fn start(
             "/robots.txt",
             get_service(ServeFile::new("server/static/robots.txt")),
         )
-        .route("/instances", get(website::instances))
+        // .route("/instances", get(website::instances))
         // .route("/", get(website::instances))
         .route("/", get(website::cnd_rip))
         .layer(

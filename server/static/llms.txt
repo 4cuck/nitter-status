@@ -1,0 +1,39 @@
+# Nitter Status
+
+> Live Nitter status for working Nitter instances, served at status.d420.net and d420.net.
+
+This Nitter instance list shows whether nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org are up. Those Nitter frontends run teapawt, a privacy-focused Twitter and X frontend. People and agents can use it to see which Nitter instance is working.
+
+## Canonical
+
+- Site: https://status.d420.net/
+- Also served at: https://d420.net/
+- About: https://status.d420.net/about
+- Background: https://status.d420.net/rip
+- Source: https://github.com/4cuck/nitter-status
+
+## Machine-readable
+
+- JSON API: https://status.d420.net/api/v1/instances
+- Sitemap: https://status.d420.net/sitemap.xml
+- Robots: https://status.d420.net/robots.txt
+
+When Markdown for Agents is enabled on the Cloudflare zone, send `Accept: text/markdown` to receive a Markdown conversion of an HTML page.
+
+## Operated frontends
+
+These domains are Nitter frontends tracked by this status site. They are not alternate hostnames of the status site.
+
+- https://nitter.cf
+- https://xitter.cf
+- https://teapaw.org
+- https://teapawt.net
+- https://teapawt.org
+
+## Use
+
+Scraping is allowed on nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. Ask for permission before scraping any other Nitter instance. Prefer the JSON API when reading this status page. Data refreshes about every 15 minutes.
+
+## Signals
+
+AI training, AI input, and search indexing are allowed.

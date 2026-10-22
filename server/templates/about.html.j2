@@ -4,16 +4,14 @@
 
 <head>
   <meta charset="utf-8">
+  {% include "seo_head.html.j2" %}
   <link href="/static/bootstrap.min.css" rel="stylesheet">
-  <meta name="robots" content="nofollow" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="author" content="" />
-  <title>About Nitter Instance Health</title>
 </head>
 
 <body>
   <div class="container">
-    <h1>Nitter instance uptime & health tracker</h1>
+    <h1>About this Nitter status page</h1>
     <p><a href="/">Home</a></p>
     <p id="update-interval">Uptime check interval: {{uptime_interval_s}}s.</p>
     <p>Instance re-fetching interval, including RSS & version check: {{wiki_interval_s}}s.</p>
@@ -62,16 +60,18 @@
       very often will get you rate limited.
     </p>
     <p>
-      Please <b>do not use instances listed here for scraping(<a rel="nofollow"
-          href="https://en.wikipedia.org/wiki/Web_scraping">?</a>) !</b>
-      Instead <a href="https://github.com/zedeus/nitter/#docker">host your own</a> nitter instance, so public instances
-      can be used by less tech savy people and not get overrun by you. You can get help with that at the listed matrix
-      channel.
+      Scraping is allowed on
+      <a rel="nofollow external" href="https://nitter.cf/">nitter.cf</a>,
+      <a rel="nofollow external" href="https://xitter.cf/">xitter.cf</a>,
+      <a rel="nofollow external" href="https://teapaw.org/">teapaw.org</a>,
+      <a rel="nofollow external" href="https://teapawt.net/">teapawt.net</a>, and
+      <a rel="nofollow external" href="https://teapawt.org/">teapawt.org</a>.
+      Ask the operator for permission before scraping any other Nitter instance.
     </p>
-    <p>The purpose of this API is to serve services like Twiiit, Farside or people looking for indication that their RSS
-      feed is down - but not scrapers. Scraping will bring the downfall of public instances.</p>
+    <p>The JSON API is for reading this status page. It refreshes on the interval above, so requesting it very often gets rate limited.</p>
 
-    <p><a rel="nofollow" href="https://github.com/4cuck/nitter-status">Sourcecode</a></p>
+    <p>Agent notes: <a href="/llms.txt">llms.txt</a>. Sitemap: <a href="/sitemap.xml">sitemap.xml</a>.</p>
+    <p><a href="https://github.com/4cuck/nitter-status">Source</a> (AGPL-3.0-only).</p>
     <p>License: AGPL3</p>
   </div>
 </body>

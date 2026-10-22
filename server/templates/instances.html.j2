@@ -4,9 +4,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="keywords" content="nitter, status, uptime" />
-  <meta name="description" content="Nitter instance uptime and status tracker." />
-  <meta name="author" content="" />
+  {% include "seo_head.html.j2" %}
   <link href="/static/bootstrap.min.css" rel="stylesheet">
   <style>
     .uptime-graph rect {
@@ -18,19 +16,47 @@
     }
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nitter Instance Health</title>
 </head>
 
 <body>
   <div class="container">
-    <h1>Nitter Instance Uptime & Health</h1>
-    <div class="alert alert-warning text-center" role="alert">
-      Nitter is down. <a href="https://github.com/zedeus/nitter/issues/1442#issuecomment-5413651441">More Info</a>
-    </div>
+    <h1>Nitter Status</h1>
+    <p>
+      Live status for working Nitter instances. These Nitter frontends are privacy-focused Twitter and X frontends:
+      <a href="https://nitter.cf/">nitter.cf</a>,
+      <a href="https://xitter.cf/">xitter.cf</a>,
+      <a href="https://teapaw.org/">teapaw.org</a>,
+      <a href="https://teapawt.net/">teapawt.net</a>, and
+      <a href="https://teapawt.org/">teapawt.org</a>.
+      Use this Nitter instance list to see which Nitter instance is up, how fast it answers, and whether RSS works.
+      Machine-readable Nitter status is at <a href="/api/v1/instances">/api/v1/instances</a>.
+    </p>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Working Nitter instances",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "nitter.cf", "url": "https://nitter.cf/"},
+        {"@type": "ListItem", "position": 2, "name": "xitter.cf", "url": "https://xitter.cf/"},
+        {"@type": "ListItem", "position": 3, "name": "teapaw.org", "url": "https://teapaw.org/"},
+        {"@type": "ListItem", "position": 4, "name": "teapawt.net", "url": "https://teapawt.net/"},
+        {"@type": "ListItem", "position": 5, "name": "teapawt.org", "url": "https://teapawt.org/"}
+      ]
+    }
+    </script>
     <p class="d-inline"><a href="/about">About</a></p>
-    <p>Please <b>do NOT use these instances for
-        scraping</b>, host nitter yourself.</p>
+    <p>
+      Scraping is allowed on
+      <a href="https://nitter.cf/">nitter.cf</a>,
+      <a href="https://xitter.cf/">xitter.cf</a>,
+      <a href="https://teapaw.org/">teapaw.org</a>,
+      <a href="https://teapawt.net/">teapawt.net</a>, and
+      <a href="https://teapawt.org/">teapawt.org</a>.
+      Ask the operator for permission before scraping any other Nitter instance.
+    </p>
     <p class="d-inline">Last Updated {{last_updated}} <a rel="nofollow" href="https://time.is/UTC">UTC</a>.</p>
+    <h2>Working Nitter instances</h2>
     <p class="d-inline">Customize the visible columns <a href="#column-settings">down below</a>.</p>
     <div class="table-responsive">
       <table id="status-tbl" class="table sortable table-hover table-sm">
@@ -43,7 +69,7 @@
             <th data-name="average" scope="col">Average Time</th>
             <th scope="col">All Time %</th>
             <th data-name="rss" scope="col">RSS</th>
-            <th data-name="version" scope="col">Nitter Version</th>
+            <th data-name="version" scope="col">Frontend</th>
             <th data-name="connectivity" scope="col">Connectivity</th>
             <th scope="col">Points</th>
           </tr>
@@ -95,7 +121,9 @@
               {%- endif -%}
               {%- endif -%}
             </td>
-            {%- if host.version_state == "Missing" -%}
+            {%- if host.version_state == "Teapot" -%}
+            {%- set version_order = "A" -%}
+            {%- elif host.version_state == "Missing" -%}
             {%- set version_order = "E" -%}
             {%- elif host.version_state == "UnknownCommit" -%}
             {%- set version_order = "D" -%}
@@ -111,14 +139,18 @@
             <td data-name="rss">{% if host.rss -%} <span role="img" aria-label="no rss">✅</span> {%- else -%} <span
                 role="img" aria-label="has rss">❌</span> {%- endif -%}</td>
             <td data-name="version" data-sort="{{version_order}}{{host.version | default(value='')}}">
-              {%- if host.version_url -%}
+              {%- if host.version_state == "Teapot" -%}
+              <a rel="nofollow external" href="{{host.version_url | default(value=host.url)}}">{{host.version}}</a>
+              <span class="ms-1 badge bg-success">{{host.version}}</span>
+              {%- elif host.version_url -%}
               <a rel="nofollow external" title="{{host.version}}" href="{{host.version_url}}">
                 {{host.version | truncate(length=18) | default(value="missing version")}}
               </a>
               {%- else -%}
               <a rel="nofollow external" href="{{host.url ~ '/about'}}">missing version</a>
               {%- endif -%}
-              {%- if host.version_state == "Missing" -%}
+              {%- if host.version_state == "Teapot" -%}
+              {%- elif host.version_state == "Missing" -%}
               <span class="ms-1 badge bg-warning">missing</span>
               {%- elif host.version_state == "UnknownCommit" -%}
               <span class="ms-1 badge bg-secondary">fork</span>
@@ -161,7 +193,7 @@
       <div class="form-check">
         <input class="form-check-input toggle-column" data-name="version" type="checkbox" id="checkVersion" checked>
         <label class="form-check-label" for="checkVersion">
-          Version Column
+          Frontend Column
         </label>
       </div>
       <div class="form-check">
@@ -171,7 +203,56 @@
         </label>
       </div>
     </div>
-  </div>
+    <h2>Nitter instance questions</h2>
+    <h3>Which Nitter instances are working?</h3>
+    <p>
+      The table above is the current Nitter status for the Nitter instances on this server:
+      nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org.
+      A checkmark means that Nitter instance is up.
+    </p>
+    <h3>Is Nitter down?</h3>
+    <p>
+      This page is the Nitter instance list for these frontends. If a row is unhealthy, that Nitter instance is down.
+      The others can still be used as a Nitter alternative for reading Twitter and X without an account.
+    </p>
+    <h3>What is a Nitter instance?</h3>
+    <p>
+      A Nitter instance is a privacy-focused Twitter frontend. These working Nitter instances run teapawt,
+      so you can open profiles, posts, and RSS feeds without talking to Twitter directly.
+    </p>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Which Nitter instances are working?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The status table lists the working Nitter instances on this server: nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. A healthy row means that Nitter instance is up."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Nitter down?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Check the Nitter status table. An unhealthy row means that Nitter instance is down. The other Nitter instances can still be used as a Twitter and X frontend."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a Nitter instance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A Nitter instance is a privacy-focused Twitter frontend. These instances run teapawt and serve profiles, posts, and RSS without an account."
+          }
+        }
+      ]
+    }
+    </script>
+    </div>
   <script src="/static/bootstrap.min.js"></script>
   <link href="/static/sorting.css" rel="stylesheet" />
   <script src="/static/sortable.min.js"></script>

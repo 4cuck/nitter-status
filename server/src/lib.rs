@@ -165,15 +165,22 @@ pub async fn start(
             .layer(session_service)
         )
         .route("/about", get(website::about))
-        // keep redirect for old nitter instances redirecting to it
-        .route("/rip", get(|| async { Redirect::temporary("/") }))
+        .route("/rip", get(website::cnd_rip))
         .route(
             "/robots.txt",
             get_service(ServeFile::new("server/static/robots.txt")),
         )
-        // .route("/instances", get(website::instances))
-        // .route("/", get(website::instances))
-        .route("/", get(website::cnd_rip))
+        .route(
+            "/llms.txt",
+            get_service(ServeFile::new("server/static/llms.txt")),
+        )
+        .route(
+            "/sitemap.xml",
+            get_service(ServeFile::new("server/static/sitemap.xml")),
+        )
+        .route("/favicon.ico", get(|| async { Redirect::permanent("/static/favicon.svg") }))
+        .route("/instances", get(website::instances))
+        .route("/", get(website::instances))
         .layer(
             ServiceBuilder::new()
                 .layer(DefaultBodyLimit::disable())

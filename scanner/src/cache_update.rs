@@ -74,7 +74,13 @@ impl Scanner {
             tracing::error!(%error, "Unable to update nitter version, using old version");
         }
 
-        let latest_commit = self.inner.version_checker.lock().unwrap().latest_commit()?;
+        let latest_commit = match self.inner.version_checker.lock().unwrap().latest_commit() {
+            Ok(commit) => commit,
+            Err(error) => {
+                tracing::warn!(%error, "no upstream nitter commit available");
+                String::from("unavailable")
+            }
+        };
 
         if hosts.is_empty() {
             return Ok(CacheData {
@@ -138,21 +144,24 @@ impl Scanner {
 
             let is_bad_host = bad_hosts.contains(&host.id);
 
-            let version_state = match host.version_url.clone() {
-                Some(url) => {
-                    let scanner_c = self.clone();
-                    spawn_blocking(move || {
-                        scanner_c
-                            .inner
-                            .version_checker
-                            .lock()
-                            .unwrap()
-                            .check_url(&url)
-                    })
-                    .await
-                    .unwrap()?
-                }
-                None => CommitInfo::Missing,
+            let version_state = match host.version.as_deref() {
+                Some("teapawt") | Some("teapot") => CommitInfo::Teapot,
+                _ => match host.version_url.clone() {
+                    Some(url) => {
+                        let scanner_c = self.clone();
+                        spawn_blocking(move || {
+                            scanner_c
+                                .inner
+                                .version_checker
+                                .lock()
+                                .unwrap()
+                                .check_url(&url)
+                        })
+                        .await
+                        .unwrap()?
+                    }
+                    None => CommitInfo::Missing,
+                },
             };
 
             // TODO: rename all of this from ping to response_time or similar

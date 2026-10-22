@@ -164,6 +164,7 @@ fn read_scanner_cfg() -> miette::Result<ScannerConfig> {
         error_retention_per_host,
         connectivity_path: String::from("/"),
         git_scratch_folder,
+        only_configured_hosts: require_env_str("ONLY_CONFIGURED_HOSTS")? == "true",
     }))
 }
 

@@ -35,6 +35,8 @@ pub enum CommitInfo {
     UnknownCommit,
     /// Missing commit (invalid URL etc)
     Missing,
+    /// Instance is teapot or teapawt, not an upstream nitter commit
+    Teapot,
 }
 
 impl CommitInfo {
@@ -44,7 +46,10 @@ impl CommitInfo {
     pub fn is_upstream(&self) -> bool {
         match self {
             CommitInfo::Outdated | CommitInfo::Current => true,
-            CommitInfo::CustomBranch | CommitInfo::UnknownCommit | CommitInfo::Missing => false,
+            CommitInfo::CustomBranch
+            | CommitInfo::UnknownCommit
+            | CommitInfo::Missing
+            | CommitInfo::Teapot => false,
         }
     }
 }

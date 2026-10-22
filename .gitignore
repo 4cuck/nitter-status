@@ -6,3 +6,5 @@
 /out.txt
 /sessions.db
 /nitter_version_clone
+/.admin-keys
+/ecosystem.config.cjs

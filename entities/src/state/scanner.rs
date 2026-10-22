@@ -45,6 +45,8 @@ pub struct Config {
     pub error_retention_per_host: usize,
     /// Path for connectivity checks
     pub connectivity_path: String,
+    /// Skip the public instance wiki and track only additional_hosts
+    pub only_configured_hosts: bool,
 }
 
 impl Config {
@@ -71,6 +73,7 @@ impl Config {
             error_retention_per_host: 100,
             connectivity_path: String::from("/"),
             git_scratch_folder: String::from("."),
+            only_configured_hosts: false,
         })
     }
 }

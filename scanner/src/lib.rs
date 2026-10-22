@@ -27,7 +27,7 @@ mod about_parser;
 mod cache_update;
 mod cleanup;
 mod instance_check;
-mod instance_parser;
+pub(crate) mod instance_parser;
 mod list_update;
 mod profile_parser;
 mod update_stats;
@@ -222,6 +222,32 @@ impl Scanner {
             .into_diagnostic()
             .wrap_err("Fetching last stats check failed!")?;
         tracing::info!(?last_uptime_check, ?last_stats_check); // TODO: wrong timestamp
+        if config.only_configured_hosts {
+            let domains: Vec<String> = config
+                .additional_hosts
+                .iter()
+                .filter_map(|host| {
+                    reqwest::Url::parse(host)
+                        .ok()
+                        .and_then(|url| url.domain().map(str::to_owned))
+                })
+                .collect();
+            if !domains.is_empty() {
+                let marks = vec!["?"; domains.len()].join(",");
+                let sql = format!("UPDATE host SET enabled = 0 WHERE domain NOT IN ({marks})");
+                let values: Vec<sea_orm::Value> =
+                    domains.into_iter().map(sea_orm::Value::from).collect();
+                db.execute(Statement::from_sql_and_values(DbBackend::Sqlite, sql, values))
+                    .await
+                    .into_diagnostic()
+                    .wrap_err("Failed to disable unconfigured hosts")?;
+            }
+        }
+        let last_list_fetch = if config.only_configured_hosts {
+            Utc.timestamp_opt(0, 0).unwrap()
+        } else {
+            last_uptime_check
+        };
         let scanner = Self {
             inner: Arc::new(InnerScanner {
                 db,
@@ -234,7 +260,7 @@ impl Scanner {
                 instance_parser: InstanceParser::new(),
                 about_parser: AboutParser::new(),
                 profile_parser: ProfileParser::new(),
-                last_list_fetch: Mutex::new(last_uptime_check),
+                last_list_fetch: Mutex::new(last_list_fetch),
                 last_uptime_check: Mutex::new(last_uptime_check),
                 last_stats_fetch: Mutex::new(last_stats_check),
                 rss_check_regex: builder_regex_rss
@@ -502,7 +528,7 @@ mod test {
     #[ignore]
     async fn test_fetch_instance_list() {
         let db = db_init().await;
-        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new())
+        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new(), true)
             .await
             .unwrap();
         let res = scanner.fetch_instance_list().await.unwrap();
@@ -514,7 +540,7 @@ mod test {
     #[ignore]
     async fn fetch_test() {
         let db = db_init().await;
-        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new())
+        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new(), true)
             .await
             .unwrap();
         let (_, res) = scanner.fetch_url("example.com/jack", None).await.unwrap();
@@ -526,7 +552,7 @@ mod test {
     #[ignore]
     async fn stats_test() {
         let db = db_init().await;
-        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new())
+        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new(), true)
             .await
             .unwrap();
         dbg!(scanner.generate_cache_data().await.unwrap());

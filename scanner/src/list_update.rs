@@ -21,34 +21,71 @@ use crate::Result;
 use crate::Scanner;
 
 impl Scanner {
+    async fn fetch_public_instance_list(&self) -> Result<(crate::instance_parser::InstanceMap, bool)> {
+        let mut fetch_result = self.fetch_instance_list().await;
+        for attempt in 1..6 {
+            match fetch_result.as_ref() {
+                Err(error) => tracing::warn!(attempt, %error, "Failed fetching instance list"),
+                Ok(_) => break,
+            }
+            sleep(Duration::from_secs(1)).await;
+            fetch_result = self.fetch_instance_list().await;
+        }
+        Ok(match fetch_result {
+            Ok(html) => match self.inner.instance_parser.parse_instancelist(
+                &html,
+                &self.inner.config.additional_hosts,
+                &self.inner.config.additional_host_country,
+                false,
+            ) {
+                Ok(parsed) => (parsed, true),
+                Err(error) => {
+                    tracing::error!(
+                        %error,
+                        "instance list parse failed; keeping configured hosts only"
+                    );
+                    (
+                        self.inner.instance_parser.additional_only(
+                            &self.inner.config.additional_hosts,
+                            &self.inner.config.additional_host_country,
+                        ),
+                        false,
+                    )
+                }
+            },
+            Err(error) => {
+                tracing::error!(
+                    %error,
+                    "instance list fetch failed; keeping configured hosts only"
+                );
+                (
+                    self.inner.instance_parser.additional_only(
+                        &self.inner.config.additional_hosts,
+                        &self.inner.config.additional_host_country,
+                    ),
+                    false,
+                )
+            }
+        })
+    }
+
     /// Fetches the list of all instances from the wiki.  
     /// Updates all fields for host::Model, including connectivity, rss, version and enabled.
     #[instrument]
     pub(crate) async fn update_instacelist(&mut self) -> Result<()> {
         let start = Instant::now();
-        // retry loop
-        let mut fetch_result;
-        fetch_result = self.fetch_instance_list().await;
-        for attempt in 1..6 {
-            match fetch_result.as_ref() {
-                Err(error) => tracing::warn!(attempt,%error,"Failed fetching instance list"),
-                Ok(_) => {
-                    break;
-                }
-            }
-            sleep(Duration::from_secs(1)).await;
-            fetch_result = self.fetch_instance_list().await;
-        }
-        let html = match fetch_result {
-            Ok(v) => v,
-            Err(e) => return Err(e),
+        let (parsed_instances, prune_missing) = if self.inner.config.only_configured_hosts {
+            tracing::info!("tracking configured hosts only");
+            (
+                self.inner.instance_parser.additional_only(
+                    &self.inner.config.additional_hosts,
+                    &self.inner.config.additional_host_country,
+                ),
+                true,
+            )
+        } else {
+            self.fetch_public_instance_list().await?
         };
-        let parsed_instances = self.inner.instance_parser.parse_instancelist(
-            &html,
-            &self.inner.config.additional_hosts,
-            &self.inner.config.additional_host_country,
-            false,
-        )?;
 
         let transaction = self.inner.db.begin().await?;
 
@@ -61,7 +98,7 @@ impl Scanner {
         let time: chrono::DateTime<Utc> = Utc::now();
         let mut removed = 0;
         for host in enabled_hosts.iter() {
-            if !parsed_instances.contains_key(&host.domain) {
+            if prune_missing && !parsed_instances.contains_key(&host.domain) {
                 host::ActiveModel {
                     id: ActiveValue::Set(host.id),
                     enabled: ActiveValue::Set(false),
@@ -148,6 +185,10 @@ impl Scanner {
         while let Some(update_model) = join_set.join_next().await.map(|v| v.unwrap()) {
             update_models.push(update_model);
         }
+        if update_models.is_empty() {
+            tracing::warn!("no instances to upsert");
+            return Ok(());
+        }
         // insert all at once
         let transaction = self.inner.db.begin().await?;
         Host::insert_many(update_models)
@@ -224,7 +265,7 @@ mod test {
     #[ignore]
     async fn list_update_test() {
         let db = db_init().await;
-        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new())
+        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new(), true)
             .await
             .unwrap();
         scanner.fetch_instance_list().await.unwrap();
@@ -235,7 +276,7 @@ mod test {
     #[ignore]
     async fn connectivity_test() {
         let db = db_init().await;
-        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new())
+        let scanner = Scanner::new(db, Config::test_defaults(), entities::state::new(), true)
             .await
             .unwrap();
         assert_eq!(

@@ -10,7 +10,7 @@ pub type Result<T> = std::result::Result<T, InstanceListError>;
 pub static EXPECT_CSS_SELCTOR: &'static str = "failed to parse css selector";
 static CHECKBOX: &'static str = "✅";
 
-type InstanceMap = HashMap<String, InstanceParsed>;
+pub(crate) type InstanceMap = HashMap<String, InstanceParsed>;
 
 #[derive(Error, Debug)]
 pub enum InstanceListError {
@@ -96,6 +96,36 @@ impl InstanceParser {
             }
         }
 
+        self.insert_additional(
+            &mut instances,
+            additional_instances,
+            additional_instances_country,
+        );
+
+        Ok(instances)
+    }
+
+    /// Configured hosts only, used when the public wiki list cannot be fetched.
+    pub(crate) fn additional_only(
+        &self,
+        additional_instances: &[String],
+        additional_instances_country: &str,
+    ) -> InstanceMap {
+        let mut instances = HashMap::new();
+        self.insert_additional(
+            &mut instances,
+            additional_instances,
+            additional_instances_country,
+        );
+        instances
+    }
+
+    fn insert_additional(
+        &self,
+        instances: &mut InstanceMap,
+        additional_instances: &[String],
+        additional_instances_country: &str,
+    ) {
         for entry in additional_instances {
             match Url::parse(entry.as_ref()) {
                 Ok(v) => {
@@ -115,8 +145,6 @@ impl InstanceParser {
                 Err(e) => tracing::warn!(instance=entry,error=?e,"Ignoring additional instance"),
             }
         }
-
-        Ok(instances)
     }
 
     /// Parse a single instance table row

@@ -34,6 +34,9 @@ impl AboutParser {
     /// Returns the text of the version <a> element of nitters about site
     pub fn parse_about_version(&self, html: &str) -> Result<AboutParsed> {
         let fragment = Html::parse_fragment(html);
+        if let Some(parsed) = self.parse_teapot(&fragment) {
+            return Ok(parsed);
+        }
         // get all <p> elements
         let p_elem = fragment
             .select(&self.selector_p)
@@ -57,6 +60,33 @@ impl AboutParser {
         Ok(AboutParsed {
             url,
             version_name: link_text,
+        })
+    }
+
+    /// teapot and teapawt about pages say "This site runs teapot" (or teapawt)
+    /// instead of publishing a nitter commit.
+    fn parse_teapot(&self, fragment: &Html) -> Option<AboutParsed> {
+        let paragraph = fragment.select(&self.selector_p).find(|element| {
+            element
+                .text()
+                .any(|text| text.to_ascii_lowercase().contains("this site runs"))
+        })?;
+        let link = paragraph.select(&self.selector_a).next()?;
+        let name = link
+            .text()
+            .fold(String::new(), |mut acc, text| {
+                acc.push_str(text);
+                acc
+            })
+            .trim()
+            .to_ascii_lowercase();
+        if name != "teapawt" && name != "teapot" {
+            return None;
+        }
+        let url = link.value().attr("href")?.trim().to_owned();
+        Some(AboutParsed {
+            version_name: name,
+            url,
         })
     }
 
@@ -84,5 +114,23 @@ mod test {
             res.url,
             String::from("https://github.com/zedeus/nitter/commit/72d8f35")
         );
+    }
+
+    #[test]
+    fn parse_teapawt() {
+        let html = r#"<p>This site runs <a href="https://github.com/4cuck/teapawt">teapawt</a>, a privacy-focused Twitter/X frontend.</p>"#;
+        let parser = AboutParser::new();
+        let res = parser.parse_about_version(html).unwrap();
+        assert_eq!(res.version_name, "teapawt");
+        assert_eq!(res.url, "https://github.com/4cuck/teapawt");
+    }
+
+    #[test]
+    fn parse_teapot() {
+        let html = r#"<p>This site runs <a href="https://github.com/example/teapot">teapot</a>.</p>"#;
+        let parser = AboutParser::new();
+        let res = parser.parse_about_version(html).unwrap();
+        assert_eq!(res.version_name, "teapot");
+        assert_eq!(res.url, "https://github.com/example/teapot");
     }
 }

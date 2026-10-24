@@ -24,10 +24,13 @@
     <p>
       Live status for working Nitter instances. These Nitter frontends are privacy-focused Twitter and X frontends:
       <a href="https://nitter.cf/">nitter.cf</a>,
+      <a href="https://nitter.gq/">nitter.gq</a>,
       <a href="https://xitter.cf/">xitter.cf</a>,
+      <a href="https://xitter.gq/">xitter.gq</a>,
       <a href="https://teapaw.org/">teapaw.org</a>,
       <a href="https://teapawt.net/">teapawt.net</a>, and
-      <a href="https://teapawt.org/">teapawt.org</a>.
+      <a href="https://teapawt.org/">teapawt.org</a>, and
+      <a href="https://goyimx.com/">goyimx.com</a>.
       Use this Nitter instance list to see which Nitter instance is up, how fast it answers, and whether RSS works.
       Machine-readable Nitter status is at <a href="/api/v1/instances">/api/v1/instances</a>.
     </p>
@@ -38,10 +41,13 @@
       "name": "Working Nitter instances",
       "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "nitter.cf", "url": "https://nitter.cf/"},
-        {"@type": "ListItem", "position": 2, "name": "xitter.cf", "url": "https://xitter.cf/"},
-        {"@type": "ListItem", "position": 3, "name": "teapaw.org", "url": "https://teapaw.org/"},
-        {"@type": "ListItem", "position": 4, "name": "teapawt.net", "url": "https://teapawt.net/"},
-        {"@type": "ListItem", "position": 5, "name": "teapawt.org", "url": "https://teapawt.org/"}
+        {"@type": "ListItem", "position": 2, "name": "nitter.gq", "url": "https://nitter.gq/"},
+        {"@type": "ListItem", "position": 3, "name": "xitter.cf", "url": "https://xitter.cf/"},
+        {"@type": "ListItem", "position": 4, "name": "xitter.gq", "url": "https://xitter.gq/"},
+        {"@type": "ListItem", "position": 5, "name": "teapaw.org", "url": "https://teapaw.org/"},
+        {"@type": "ListItem", "position": 6, "name": "teapawt.net", "url": "https://teapawt.net/"},
+        {"@type": "ListItem", "position": 7, "name": "teapawt.org", "url": "https://teapawt.org/"},
+        {"@type": "ListItem", "position": 8, "name": "goyimx.com", "url": "https://goyimx.com/"}
       ]
     }
     </script>
@@ -49,7 +55,9 @@
     <p>
       Scraping is allowed on
       <a href="https://nitter.cf/">nitter.cf</a>,
+      <a href="https://nitter.gq/">nitter.gq</a>,
       <a href="https://xitter.cf/">xitter.cf</a>,
+      <a href="https://xitter.gq/">xitter.gq</a>,
       <a href="https://teapaw.org/">teapaw.org</a>,
       <a href="https://teapawt.net/">teapawt.net</a>, and
       <a href="https://teapawt.org/">teapawt.org</a>.
@@ -141,7 +149,6 @@
             <td data-name="version" data-sort="{{version_order}}{{host.version | default(value='')}}">
               {%- if host.version_state == "Teapot" -%}
               <a rel="nofollow external" href="{{host.version_url | default(value=host.url)}}">{{host.version}}</a>
-              <span class="ms-1 badge bg-success">{{host.version}}</span>
               {%- elif host.version_url -%}
               <a rel="nofollow external" title="{{host.version}}" href="{{host.version_url}}">
                 {{host.version | truncate(length=18) | default(value="missing version")}}
@@ -206,8 +213,8 @@
     <h2>Nitter instance questions</h2>
     <h3>Which Nitter instances are working?</h3>
     <p>
-      The table above is the current Nitter status for the Nitter instances on this server:
-      nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org.
+      The table above is the current Nitter status for
+      nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com.
       A checkmark means that Nitter instance is up.
     </p>
     <h3>Is Nitter down?</h3>
@@ -230,7 +237,7 @@
           "name": "Which Nitter instances are working?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The status table lists the working Nitter instances on this server: nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. A healthy row means that Nitter instance is up."
+            "text": "The status table lists nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com. A healthy row means that Nitter instance is up."
           }
         },
         {

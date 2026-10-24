@@ -2,7 +2,7 @@
 
 > Live Nitter status for working Nitter instances, served at status.d420.net and d420.net.
 
-This Nitter instance list shows whether nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org are up. Those Nitter frontends run teapawt, a privacy-focused Twitter and X frontend. People and agents can use it to see which Nitter instance is working.
+This Nitter instance list shows whether nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com are up. The operated frontends run teapawt. goyimx.com runs original teapot. People and agents can use it to see which Nitter instance is working.
 
 ## Canonical
 
@@ -25,14 +25,17 @@ When Markdown for Agents is enabled on the Cloudflare zone, send `Accept: text/m
 These domains are Nitter frontends tracked by this status site. They are not alternate hostnames of the status site.
 
 - https://nitter.cf
+- https://nitter.gq
 - https://xitter.cf
+- https://xitter.gq
 - https://teapaw.org
 - https://teapawt.net
 - https://teapawt.org
+- https://goyimx.com
 
 ## Use
 
-Scraping is allowed on nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. Ask for permission before scraping any other Nitter instance. Prefer the JSON API when reading this status page. Data refreshes about every 15 minutes.
+Scraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask for permission before scraping any other Nitter instance. Prefer the JSON API when reading this status page. Data refreshes about every 15 minutes.
 
 ## Signals
 

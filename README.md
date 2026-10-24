@@ -4,7 +4,7 @@ Live status for the teapawt frontends: [status.d420.net](https://status.d420.net
 
 [Screenshot](screenshot.png)
 
-The public list is nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. Scraping is allowed on those instances. Ask the operator before scraping any other Nitter instance.
+The public list is nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com. Scraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask the operator before scraping any other Nitter instance.
 
 ## Run
 

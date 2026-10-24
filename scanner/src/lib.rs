@@ -24,6 +24,7 @@ use crate::version_check::VersionCheck;
 type Result<T> = std::result::Result<T, ScannerError>;
 
 mod about_parser;
+mod bagel;
 mod cache_update;
 mod cleanup;
 mod instance_check;
@@ -87,6 +88,8 @@ pub enum FetchError {
     RetrievingBody(String, reqwest::Error),
     #[error("Host responded with captcha")]
     Captcha,
+    #[error("Browser check failed: {0}")]
+    Bagel(String),
 }
 
 impl FetchError {
@@ -96,7 +99,7 @@ impl FetchError {
             FetchError::Reqwest(e) => e.status().map(|v| v.as_u16()),
             FetchError::HttpResponseStatus(code, _, _) => Some(*code),
             FetchError::KnownHttpResponseStatus(code, _, _body) => Some(*code),
-            FetchError::Captcha | FetchError::RetrievingBody(_, _) => None,
+            FetchError::Captcha | FetchError::RetrievingBody(_, _) | FetchError::Bagel(_) => None,
         }
     }
 
@@ -114,6 +117,7 @@ impl FetchError {
                 HostError::new_message(reqwest_error.to_string())
             }
             FetchError::Captcha => HostError::new_message(format!("Captcha detected")),
+            FetchError::Bagel(message) => HostError::new_message(message),
         }
     }
 }
@@ -171,14 +175,17 @@ struct InnerScanner {
 }
 
 impl Scanner {
-    pub(crate) fn client_builder(config: &ScannerConfig) -> ClientBuilder {
+    pub(crate) fn client_builder(
+        config: &ScannerConfig,
+        cookies: Arc<reqwest::cookie::Jar>,
+    ) -> ClientBuilder {
         let mut headers = HeaderMap::with_capacity(HEADERS.len());
         for header in HEADERS {
             headers.insert(header[0], HeaderValue::from_static(header[1]));
         }
         let user_agent = format!("nitter-status (+{}/about)", config.website_url);
         let http_client = Client::builder()
-            .cookie_store(true)
+            .cookie_provider(cookies)
             .brotli(true)
             .deflate(true)
             .tls_backend_native()
@@ -202,12 +209,13 @@ impl Scanner {
         let version_checker =
             Mutex::new(VersionCheck::new(config.clone(), disable_github_fetch).into_diagnostic()?);
 
-        let http_client = Self::client_builder(&config);
-        let client_ipv4 = Scanner::client_builder(&config)
+        let cookies = Arc::new(reqwest::cookie::Jar::default());
+        let http_client = Self::client_builder(&config, cookies.clone());
+        let client_ipv4 = Scanner::client_builder(&config, cookies.clone())
             .local_address("0.0.0.0".parse::<IpAddr>().unwrap())
             .build()
             .into_diagnostic()?;
-        let client_ipv6 = Scanner::client_builder(&config)
+        let client_ipv6 = Scanner::client_builder(&config, cookies)
             .local_address("::".parse::<IpAddr>().unwrap())
             .build()
             .into_diagnostic()?;
@@ -331,7 +339,8 @@ impl Scanner {
                     tracing::error!(error=?e,"Failed updating instance list");
                 }
             }
-            if self.is_instance_check_outdated() {
+            let missing_checks = self.has_unscanned_hosts().await.unwrap_or(false);
+            if self.is_instance_check_outdated() || missing_checks {
                 if let Err(e) = self.check_uptime().await {
                     tracing::error!(error=?e,"Failed checking instances for health");
                 }
@@ -390,6 +399,18 @@ impl Scanner {
         *self.inner.last_stats_fetch.lock().unwrap()
     }
 
+    async fn has_unscanned_hosts(&self) -> Result<bool> {
+        let row = self
+            .inner
+            .db
+            .query_one(Statement::from_string(
+                DbBackend::Sqlite,
+                "SELECT 1 AS present FROM host h WHERE h.enabled = 1 AND NOT EXISTS (SELECT 1 FROM health_check c WHERE c.host = h.id) LIMIT 1".to_owned(),
+            ))
+            .await?;
+        Ok(row.is_some())
+    }
+
     fn is_instance_check_outdated(&self) -> bool {
         let val = self.last_uptime_check();
         Utc::now().signed_duration_since(val).to_std().unwrap()
@@ -420,11 +441,76 @@ impl Scanner {
         url: &str,
         api_token: Option<&str>,
     ) -> std::result::Result<(u16, String), FetchError> {
-        let mut request = self.inner.client.get(url);
+        self.fetch_with(&self.inner.client, url, api_token).await
+    }
+
+    pub(crate) async fn fetch_with(
+        &self,
+        client: &Client,
+        url: &str,
+        api_token: Option<&str>,
+    ) -> std::result::Result<(u16, String), FetchError> {
+        self.finish_fetch(client, url, api_token, true).await
+    }
+
+    async fn send_get(
+        client: &Client,
+        url: &str,
+        api_token: Option<&str>,
+    ) -> std::result::Result<reqwest::Response, FetchError> {
+        let mut request = client.get(url);
         if let Some(token) = api_token {
             request = request.bearer_auth(token);
         }
-        let fetch_res = request.send().await?;
+        Ok(request.send().await?)
+    }
+
+    async fn finish_fetch(
+        &self,
+        client: &Client,
+        url: &str,
+        api_token: Option<&str>,
+        allow_bagel: bool,
+    ) -> std::result::Result<(u16, String), FetchError> {
+        let fetch_res = Self::send_get(client, url, api_token).await?;
+        let code = fetch_res.status().as_u16();
+        if code == 418 && allow_bagel {
+            let message = fetch_res
+                .status()
+                .canonical_reason()
+                .unwrap_or_default()
+                .to_owned();
+            let body_text = fetch_res.text().await.unwrap_or_default();
+            if bagel::is_challenge(&body_text) {
+                let _guard = bagel::lock().await;
+                let retry = Self::send_get(client, url, api_token).await?;
+                if retry.status().as_u16() != 418 {
+                    return self.finish_fetch_response(url, retry, false, client, api_token).await;
+                }
+                let retry_body = retry.text().await.unwrap_or_default();
+                if bagel::is_challenge(&retry_body) {
+                    bagel::solve(client, url, &retry_body).await?;
+                    let passed = Self::send_get(client, url, api_token).await?;
+                    return self
+                        .finish_fetch_response(url, passed, false, client, api_token)
+                        .await;
+                }
+                return Err(FetchError::HttpResponseStatus(418, message, retry_body));
+            }
+            return Err(FetchError::HttpResponseStatus(code, message, body_text));
+        }
+        self.finish_fetch_response(url, fetch_res, allow_bagel, client, api_token)
+            .await
+    }
+
+    async fn finish_fetch_response(
+        &self,
+        url: &str,
+        fetch_res: reqwest::Response,
+        _allow_bagel: bool,
+        _client: &Client,
+        _api_token: Option<&str>,
+    ) -> std::result::Result<(u16, String), FetchError> {
         let code = fetch_res.status().as_u16();
         if !fetch_res.status().is_success() {
             let message = fetch_res

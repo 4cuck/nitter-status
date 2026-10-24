@@ -25,6 +25,8 @@ git2 = "0.20"
 serde = { workspace = true, features = ["derive"] }
 # health parsing
 serde_json = "1"
+wasmi = "0.40"
+base64 = "0.22"
 
 [dev-dependencies]
 tracing-test = { workspace = true }

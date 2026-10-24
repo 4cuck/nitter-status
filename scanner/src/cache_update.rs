@@ -144,8 +144,8 @@ impl Scanner {
 
             let is_bad_host = bad_hosts.contains(&host.id);
 
-            let version_state = match host.version.as_deref() {
-                Some("teapawt") | Some("teapot") => CommitInfo::Teapot,
+            let version_state = match host.version.as_deref().map(str::trim) {
+                Some(version) if is_teapot_label(version) => CommitInfo::Teapot,
                 _ => match host.version_url.clone() {
                     Some(url) => {
                         let scanner_c = self.clone();
@@ -445,4 +445,12 @@ impl Scanner {
             .collect();
         Ok(health_checks)
     }
+}
+
+fn is_teapot_label(version: &str) -> bool {
+    let version = version.trim().to_ascii_lowercase();
+    version == "teapawt"
+        || version == "teapot"
+        || version.starts_with("teapawt ")
+        || version.starts_with("teapot ")
 }

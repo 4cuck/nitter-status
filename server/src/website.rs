@@ -85,7 +85,7 @@ pub async fn instances(
             .read()
             .map_err(|_| ServerError::MutexFailure)?;
         let mut body = format!(
-            "# Nitter Status\n\nLive status for working Nitter instances: nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org.\n\nScraping is allowed on nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nLast updated: {} UTC\n\n- JSON: /api/v1/instances\n- About: /about\n- Agent notes: /llms.txt\n\n| Instance | Frontend | Healthy | Average | All-time | RSS | Country |\n| --- | --- | --- | --- | --- | --- | --- |\n",
+            "# Nitter Status\n\nLive status for working Nitter instances: nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com.\n\nScraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nLast updated: {} UTC\n\n- JSON: /api/v1/instances\n- About: /about\n- Agent notes: /llms.txt\n\n| Instance | Frontend | Healthy | Average | All-time | RSS | Country |\n| --- | --- | --- | --- | --- | --- | --- |\n",
             guard.last_update.format("%Y-%m-%d %H:%M")
         );
         for host in &guard.hosts {
@@ -122,7 +122,7 @@ pub async fn instances(
         &config.site_url,
         "/",
         "Nitter Status — Working Nitter Instances",
-        "Live Nitter status for working Nitter instances: nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. See which Nitter instance is up.",
+        "Live Nitter status for working Nitter instances: nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com. See which Nitter instance is up.",
     );
     let mut res = {
         let guard = app_state
@@ -163,7 +163,7 @@ pub async fn about(
             .latest_commit
             .clone();
         let body = format!(
-            "# About Nitter Status\n\nHow this Nitter instance list checks working Nitter instances.\n\nUptime check interval: {uptime}s.\n\nInstance list refresh interval: {wiki}s.\n\nResponse-time average window: {ping} hours.\n\nLatest known upstream commit: {latest_commit}\n\nChecked paths:\n\n- `{about}`\n- `{rss}`\n- `{profile}`\n- `{connectivity}`\n\nScraping is allowed on nitter.cf, xitter.cf, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nJSON API: `/api/v1/instances`\n\nAgent notes: `/llms.txt`\n\nSource: https://github.com/4cuck/nitter-status\n",
+            "# About Nitter Status\n\nHow this Nitter instance list checks working Nitter instances.\n\nUptime check interval: {uptime}s.\n\nInstance list refresh interval: {wiki}s.\n\nResponse-time average window: {ping} hours.\n\nLatest known upstream commit: {latest_commit}\n\nChecked paths:\n\n- `{about}`\n- `{rss}`\n- `{profile}`\n- `{connectivity}`\n\nScraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nJSON API: `/api/v1/instances`\n\nAgent notes: `/llms.txt`\n\nSource: https://github.com/4cuck/nitter-status\n",
             uptime = scanner_config.instance_check_interval.as_secs(),
             wiki = scanner_config.list_fetch_interval.as_secs(),
             ping = scanner_config.ping_range.num_hours(),

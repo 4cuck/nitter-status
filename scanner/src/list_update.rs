@@ -227,21 +227,15 @@ impl Scanner {
     async fn check_connectivity(&self, url: &mut Url) -> Option<host::Connectivity> {
         url.set_path(&self.inner.config.connectivity_path);
         let ipv4 = self
-            .inner
-            .client_ipv4
-            .get(url.as_str())
-            .send()
+            .fetch_with(&self.inner.client_ipv4, url.as_str(), None)
             .await
-            .map_or(false, |res| res.status().is_success());
+            .map_or(false, |(code, _)| (200..300).contains(&code));
         // prevent DoS
         tokio::time::sleep(Duration::from_secs(1)).await;
         let ipv6 = self
-            .inner
-            .client_ipv6
-            .get(url.as_str())
-            .send()
+            .fetch_with(&self.inner.client_ipv6, url.as_str(), None)
             .await
-            .map_or(false, |res| res.status().is_success());
+            .map_or(false, |(code, _)| (200..300).contains(&code));
 
         match (ipv4, ipv6) {
             (true, true) => Some(host::Connectivity::All),

@@ -85,7 +85,7 @@ pub async fn instances(
             .read()
             .map_err(|_| ServerError::MutexFailure)?;
         let mut body = format!(
-            "# Nitter Status\n\nLive status for working Nitter instances: nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com.\n\nScraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nLast updated: {} UTC\n\n- JSON: /api/v1/instances\n- About: /about\n- Agent notes: /llms.txt\n\n| Instance | Frontend | Healthy | Average | All-time | RSS | Country |\n| --- | --- | --- | --- | --- | --- | --- |\n",
+            "# Nitter Status\n\nLive status for working Nitter instances: nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com.\n\nxitter.cf and nitter.gq are listed first. They are helped and paid for by the community, so they perform a lot better and have better response times.\n\ngoyimx.com is listed last. It is unreliable and has issues all the time.\n\nScraping is allowed on nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, and teapawt.org. Ask the operator for permission before scraping any other Nitter instance.\n\nLast updated: {} UTC\n\n- JSON: /api/v1/instances\n- About: /about\n- Agent notes: /llms.txt\n\n| Instance | Frontend | Healthy | Average | All-time | RSS | Country |\n| --- | --- | --- | --- | --- | --- | --- |\n",
             guard.last_update.format("%Y-%m-%d %H:%M")
         );
         for host in &guard.hosts {

@@ -169,6 +169,8 @@ impl Scanner {
             let last_healthy = last_healthy_check.remove(&host.id);
             let __show_last_seen =
                 last_healthy.map_or(true, |e| (time_now - e) > Duration::hours(12));
+            let community_funded = matches!(host.domain.as_str(), "xitter.cf" | "nitter.gq");
+            let unreliable = host.domain == "goyimx.com";
             host_statistics.push(CacheHost {
                 last_healthy: last_healthy,
                 __show_last_seen,
@@ -193,6 +195,8 @@ impl Scanner {
                 country: host.country,
                 healthy_percentage_overall: healthy_percentage_total.remove(&host.id).unwrap_or(0),
                 recent_checks: self.query_latest_health_checks(22, host.id).await?,
+                community_funded,
+                unreliable,
             })
         }
         host_statistics.sort_unstable_by(|a, b| {
@@ -218,6 +222,7 @@ impl Scanner {
             }
         });
         host_statistics.reverse();
+        host_statistics.sort_by_key(|host| list_rank(&host.domain));
         Ok(CacheData {
             hosts: host_statistics,
             last_update: time_now,
@@ -444,6 +449,15 @@ impl Scanner {
             })
             .collect();
         Ok(health_checks)
+    }
+}
+
+fn list_rank(domain: &str) -> u8 {
+    match domain {
+        "xitter.cf" => 0,
+        "nitter.gq" => 1,
+        "goyimx.com" => 3,
+        _ => 2,
     }
 }
 

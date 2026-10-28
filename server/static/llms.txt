@@ -4,6 +4,8 @@
 
 This Nitter instance list shows whether nitter.cf, nitter.gq, xitter.cf, xitter.gq, teapaw.org, teapawt.net, teapawt.org, and goyimx.com are up. The operated frontends run teapawt. goyimx.com runs original teapot. People and agents can use it to see which Nitter instance is working.
 
+xitter.cf and nitter.gq are listed first. They are helped and paid for by the community, so they perform a lot better and have better response times. goyimx.com is listed last because it is unreliable and has issues all the time.
+
 ## Canonical
 
 - Site: https://status.d420.net/

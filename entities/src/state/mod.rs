@@ -104,4 +104,8 @@ pub struct CacheHost {
     pub connectivity: Option<Connectivity>,
     /// Internal: show last-seen information
     pub __show_last_seen: bool,
+    /// Helped and paid for by the community. Listed first.
+    pub community_funded: bool,
+    /// Known to be unreliable. Listed last.
+    pub unreliable: bool,
 }

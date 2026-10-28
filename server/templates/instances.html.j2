@@ -14,6 +14,22 @@
     .uptime-graph rect:hover {
       fill: #5e6c84;
     }
+
+    tr.community-row td {
+      background: rgba(47, 204, 102, 0.12);
+    }
+
+    tr.unreliable-row td {
+      background: rgba(255, 98, 37, 0.1);
+    }
+
+    .instance-note {
+      display: block;
+      max-width: 28rem;
+      margin-top: 0.25rem;
+      color: #d0d0d0;
+      font-size: 0.85rem;
+    }
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -28,7 +44,7 @@
       <a href="https://xitter.cf/">xitter.cf</a>,
       <a href="https://xitter.gq/">xitter.gq</a>,
       <a href="https://teapaw.org/">teapaw.org</a>,
-      <a href="https://teapawt.net/">teapawt.net</a>, and
+      <a href="https://teapawt.net/">teapawt.net</a>,
       <a href="https://teapawt.org/">teapawt.org</a>, and
       <a href="https://goyimx.com/">goyimx.com</a>.
       Use this Nitter instance list to see which Nitter instance is up, how fast it answers, and whether RSS works.
@@ -64,6 +80,13 @@
       Ask the operator for permission before scraping any other Nitter instance.
     </p>
     <p class="d-inline">Last Updated {{last_updated}} <a rel="nofollow" href="https://time.is/UTC">UTC</a>.</p>
+    <div class="alert alert-success mt-3" role="status">
+      <a href="https://xitter.cf/">xitter.cf</a> and <a href="https://nitter.gq/">nitter.gq</a>
+      are helped and paid for by the community, so they perform a lot better and have better response times.
+    </div>
+    <div class="alert alert-warning" role="status">
+      <a href="https://goyimx.com/">goyimx.com</a> is unreliable and has issues all the time.
+    </div>
     <h2>Working Nitter instances</h2>
     <p class="d-inline">Customize the visible columns <a href="#column-settings">down below</a>.</p>
     <div class="table-responsive">
@@ -84,8 +107,17 @@
         </thead>
         <tbody>
           {% for host in instances -%}
-          <tr>
-            <td><a rel="nofollow external" href="{{host.url}}">{{host.domain}}</a></td>
+          <tr class="{% if host.community_funded %}community-row{% elif host.unreliable %}unreliable-row{% endif %}">
+            <td>
+              <a rel="nofollow external" href="{{host.url}}">{{host.domain}}</a>
+              {%- if host.community_funded -%}
+              <span class="ms-1 badge bg-success">Community funded</span>
+              <span class="instance-note">Helped and paid for by the community, so it performs a lot better and has better response times.</span>
+              {%- elif host.unreliable -%}
+              <span class="ms-1 badge bg-warning text-dark">Unreliable</span>
+              <span class="instance-note">Has issues all the time.</span>
+              {%- endif -%}
+            </td>
             <td data-name="country">{{host.country}}</td>
             <td>
               {%- if host.is_bad_host -%}
